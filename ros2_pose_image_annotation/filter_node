@@ -1,0 +1,57 @@
+import rclpy
+from rclpy.node import Node
+from geometry_msgs.msg import PoseStamped
+
+# Make sure you have the correct gazebo message imported.
+# Change this if your gazebo bridge uses a different message type.
+from gz_msgs.msg import Pose_V
+
+
+class GzPoseFilter(Node):
+    def __init__(self):
+        super().__init__('gz_pose_filter')
+
+        self.subscription = self.create_subscription(
+            Pose_V,
+            '/world/default/dynamic_pose/info',
+            self.listener_callback,
+            10)
+
+        self.publisher_ = self.create_publisher(PoseStamped, 'pose', 10)
+
+    def listener_callback(self, msg: Pose_V):
+        for pose in msg.pose:
+            if pose.name == 'burger':
+                x = pose.position.x
+                y = pose.position.y
+                self.publish_pose(x, y)
+
+    def publish_pose(self, x, y):
+        pose_msg = PoseStamped()
+        pose_msg.header.stamp = self.get_clock().now().to_msg()
+        pose_msg.header.frame_id = 'map'  # or frame of your choice
+
+        pose_msg.pose.position.x = x
+        pose_msg.pose.position.y = y
+        pose_msg.pose.position.z = 0.0
+
+        # Set a neutral orientation (no rotation)
+        pose_msg.pose.orientation.x = 0.0
+        pose_msg.pose.orientation.y = 0.0
+        pose_msg.pose.orientation.z = 0.0
+        pose_msg.pose.orientation.w = 1.0
+
+        self.publisher_.publish(pose_msg)
+        self.get_logger().info(f'Filtered and published pose: x={x}, y={y}')
+
+
+def main(args=None):
+    rclpy.init(args=args)
+    node = GzPoseFilter()
+    rclpy.spin(node)
+    node.destroy_node()
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()
