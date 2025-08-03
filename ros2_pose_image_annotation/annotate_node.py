@@ -53,13 +53,13 @@ class AnnotateNode(Node):
                 py_img = h - py
 
                 # Draw red circle
-                cv2.circle(cv_image, (px, py_img), 0.1, (0, 0, 255), -1)
+                cv2.circle(cv_image, (px, py_img), 1, (0, 0, 255), -1)
 
                 # If last pose, draw its coordinates as text
                 if i == len(self.poses) - 1:
                     cv2.putText(cv_image, f"({x_m:.1f},{y_m:.1f})",
-                                (px + 8, py_img - 8),
-                                cv2.FONT_HERSHEY_SIMPLEX, 0.4, (0, 0, 255), 1, cv2.LINE_AA)
+                                (px + 2, py_img - 2),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.35, (0, 0, 255), 1, cv2.LINE_AA)
 
         # Publish annotated image
         out_msg = self.bridge.cv2_to_imgmsg(cv_image, encoding='bgr8')
